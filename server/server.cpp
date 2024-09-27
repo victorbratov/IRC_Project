@@ -6,9 +6,10 @@
 #include <ostream>
 #include <string>
 #include <sys/socket.h>
+#include <vector>
 
 
-Server::Server(std::string name, int max_clients, std::string port){
+Server::Server(std::string name, int max_clients, std::string port, std::string password){
     this->name = name;
     this->max_clients = max_clients;
     this->fds = new struct pollfd[max_clients];
@@ -16,6 +17,9 @@ Server::Server(std::string name, int max_clients, std::string port){
     this->fds[0].fd = this->socket_fd;
     this->fds[0].events = POLLIN;
     this->clients_online = 1;
+    this->password = password;
+    this->clients = std::map<int, Client *>();
+    this->nicks = std::vector<std::string>();
 }
 
 Server::~Server(){
@@ -159,7 +163,7 @@ void Server::client_message(int index){
         removePoll(index);
     } else {
         std::string msg = std::string(buf, nbytes);
-        std::string response = "server: " + msg;
+        std::string response = respond(msg, index);
         std::cout << response << std::endl;
         if (send(this->fds[index].fd, response.c_str(), response.length(), 0) == -1) {
             std::cerr << "send" << std::endl;
