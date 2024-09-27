@@ -1,6 +1,6 @@
 CXX = g++
 
-CXXFLAGS = -std=c++11 -Wall -Wextra -pedantic -I./headers
+CXXFLAGS = -std=c++11 -g -Wall -Wextra -pedantic -I./headers
 
 TARGET = server
 

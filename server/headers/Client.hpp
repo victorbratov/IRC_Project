@@ -5,7 +5,7 @@
 #include <sys/socket.h>
 #include <unistd.h>
 
-struct Mode{
+struct Mode {
     bool	away;
 	bool	invisible;
 	bool	wallops;

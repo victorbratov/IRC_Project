@@ -45,7 +45,7 @@ class Server{
 
 inline bool isValidNick(std::string nick){
     if (nick.size() > 9) return false;
-    for (int i = 0; i < nick.size(); i++){
+    for (std::string::size_type i = 0; i < nick.length(); i++){
         if (!isalnum(nick[i])) return false;
         if (nick[i] == '-') return false;
         if (nick[i] == '\r') return false;

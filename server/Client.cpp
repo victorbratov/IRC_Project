@@ -1,8 +1,16 @@
 #include "headers/Client.hpp"
+#include <sys/socket.h>
 
 Client::Client(int fd){
     this->isRegistered = false;
+    this->isAuth = false;
     this->fd = fd;
+    this->username = "";
+    this->realName = "";
+    this->nickname = "";
+    this->addr = sockaddr_storage();
+    this->addrLen = sizeof(this->addr);
+    this->mode = Mode{0, 0, 0, 0, 0, 0, 0};
 }
 
 Client::~Client(){
