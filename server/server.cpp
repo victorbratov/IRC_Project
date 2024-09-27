@@ -174,3 +174,7 @@ void Server::client_message(int index){
 
     memset(buf, 0, 1024);
 }
+
+std::string Server::msgTransform(std::string msg){
+    return ":" + this->name + " " + msg + "\r\n";
+}
