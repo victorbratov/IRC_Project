@@ -2,7 +2,6 @@
 #define CLIENT_HPP
 
 #include <string>
-#include <sys/_types/_socklen_t.h>
 #include <sys/socket.h>
 #include <unistd.h>
 
@@ -18,9 +17,9 @@ struct Mode{
 
 class Client{
     private:
-        bool isRegistered;
+        bool isRegistered, isAuth;
         int fd;
-        std::string nickname;
+        std::string nickname, username;
         std::string realName;
         sockaddr_storage addr;
         socklen_t addrLen;
@@ -32,18 +31,22 @@ class Client{
 
     public:
         bool IsRegistered();
+        bool IsAuth();
         int GetFd();
         std::string GetNickname();
         std::string GetRealName();
         std::string GetHost();
+        std::string GetUsername();
         sockaddr_storage GetAddr();
         socklen_t GetAddrLen();
         Mode GetMode();
 
         void SetNickname(std::string nickname);
         void SetRealName(std::string realName);
+        void SetUsername(std::string username);
         void SetMode(Mode mode);
         void SetRegistered(bool isRegistered);
+        void SetAuth(bool isAuth);
 
 };
 
