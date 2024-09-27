@@ -4,7 +4,9 @@
 #include <string>
 #include <vector>
 
+// Constructor for Message class
 Message::Message(std::string message) {
+  
     this->arguments = std::vector<std::string>();
     this->command = "";
     this->prefix = "";
@@ -40,10 +42,12 @@ std::string Message::getCommand() {
     return this->command;
 }
 
+// method to return the list of arguments
 std::vector<std::string> Message::getArguments() {
-     return this->arguments;
- }
+    return this->arguments;
+}
 
+// method to return the prefix
 std::string Message::getPrefix() {
     return this->prefix;
 }
