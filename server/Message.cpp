@@ -1,52 +1,43 @@
 #include "headers/Message.hpp"
+#include <iostream>
 #include <sstream>
 #include <string>
 #include <vector>
-#include <algorithm>
-#include <iostream>
 
 Message::Message(std::string message) {
-    bool flag = true;
-    std::vector <std::string> commands = { "PASS", "NICK", "USER", "PRIVMSG", "MODE", "PING", "PONG"};
-    int characters = 0;
-    std::stringstream ss(message);
+    this->arguments = std::vector<std::string>();
+    this->command = "";
+    this->prefix = "";
+    std::istringstream iss(message);
     std::string token;
-    if (message[0] == ':') {
-        std::getline(ss, token, ' ');
-        if (token.length()==1){
-            std::cout << "Message not valid"<< std::endl;
-            flag = false;
-            return;
-        }
-        this->prefix = token;
-        characters+=token.length();
 
+    if (message[0] == ':') {
+        iss >> this->prefix;
+        this->prefix = this->prefix.substr(1);
     }
-    std::getline(ss, token, ' ');
-    if (count(commands.begin(), commands.end(), token) <= 0){
-        if (stoi(token) < 100 && stoi(token) > 127){
-            std::cout << "Message not valid"<< std::endl;
-            flag = false;
-            return;
+
+    iss >> this->command;
+
+    while (iss >> token) {
+        if (token[0] == ':') {
+            std::string trailing = token.substr(1);
+            std::getline(iss, token);
+            trailing += token;
+            this->arguments.push_back(trailing);
+            break;
         }
-    }
-    this->command = token;
-    characters+=token.length();
-    while (std::getline(ss, token, ' ')) {
         this->arguments.push_back(token);
-        characters+=token.length();
     }
-    if (characters>512){
-        std::cout << "Message is not valid"<< std::endl;
-        flag = false;
-    }
+
+    this->invalid = this->command.empty();
 }
 
+Message::~Message() {}
 
 
-     std::string Message::getCommand() {
-     std::transform(this->command.begin(), this->command.end(), this->command.begin(), ::toupper);
-     return this->command;
+
+std::string Message::getCommand() {
+    return this->command;
 }
 
 std::vector<std::string> Message::getArguments() {
@@ -56,8 +47,7 @@ std::vector<std::string> Message::getArguments() {
 std::string Message::getPrefix() {
     return this->prefix;
 }
-std::string Message::toString() {
-    std::string formattedMsg;
 
-
+bool Message::isInvalid() {
+    return this->invalid;
 }

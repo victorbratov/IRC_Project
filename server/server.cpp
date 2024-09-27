@@ -1,5 +1,6 @@
 #include "headers/Server.hpp"
 #include "headers/Client.hpp"
+#include "headers/Message.hpp"
 #include <cstring>
 #include <iostream>
 #include <map>
@@ -85,7 +86,7 @@ void Server::addPoll(int newfd){
 
     this->fds[this->clients_online].fd = newfd;
     this->fds[this->clients_online].events = POLLIN;
-    this->clients.insert(std::pair<int, Client*>(newfd, new Client(newfd)));
+    this->clients[newfd] = new Client(newfd);
     this->clients_online++;
 }
 
@@ -163,7 +164,8 @@ void Server::client_message(int index){
         removePoll(index);
     } else {
         std::string msg = std::string(buf, nbytes);
-        std::string response = respond(msg, index);
+        Message message = Message(msg);
+        std::string response = respond(message, index);
         std::cout << response << std::endl;
         if (send(this->fds[index].fd, response.c_str(), response.length(), 0) == -1) {
             std::cerr << "send" << std::endl;

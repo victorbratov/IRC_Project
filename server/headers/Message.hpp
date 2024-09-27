@@ -16,6 +16,11 @@ class Message {
         std::string getCommand();
         std::vector<std::string> getArguments();
         std::string getPrefix();
+        bool isInvalid();
+        void setCommand(std::string command);
+        void setArguments(std::vector<std::string> arguments);
+        void setPrefix(std::string prefix);
+        void setInvalid(bool invalid);
 };
 
 #endif // MESSAGE_HPP
