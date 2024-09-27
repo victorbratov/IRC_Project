@@ -8,7 +8,7 @@
 // Constructor for Message class
 Message::Message(std::string message) {
     // if message is valid
-    bool flag = true;
+    this->invalid = true;
 
     // commands for the IRC protocol
     std::vector <std::string> commands = { "PASS", "NICK", "USER", "PRIVMSG", "MODE", "PING", "PONG"};
@@ -28,7 +28,7 @@ Message::Message(std::string message) {
         // checking invalid prefix, only colon
         if (token.length() == 1) {
             std::cout << "Message not valid" << std::endl;
-            flag = false;
+            this->invalid = false;
             return;
         }
 
@@ -47,7 +47,7 @@ Message::Message(std::string message) {
             int numericCommand = std::stoi(token);
             if (numericCommand < 100 || numericCommand > 127) {
                 std::cout << "Message not valid" << std::endl;
-                flag = false;
+                this->invalid = false;
                 return;
             }
         }
@@ -55,13 +55,13 @@ Message::Message(std::string message) {
     // processing exception for NOT valid number
     catch (std::invalid_argument& e) {
         std::cout << "Message not valid: Invalid command" << std::endl;
-        flag = false;
+        this->invalid = false;
         return;
     }
     // processing out the range exception when parsing the token
     catch (std::out_of_range& e) {
         std::cout << "Message not valid: Command out of range" << std::endl;
-        flag = false;
+        this->invalid = false;
         return;
     }
 
@@ -92,7 +92,7 @@ Message::Message(std::string message) {
     // if the total character count overrun 512 characters (from the protocol limit)
     if (characters > 512) {
         std::cout << "Message is not valid" << std::endl;
-        flag = false;
+        this->invalid = false;
     }
 }
 
