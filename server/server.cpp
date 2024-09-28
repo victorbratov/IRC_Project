@@ -175,6 +175,7 @@ void Server::client_message(int index){
     memset(buf, 0, 1024);
 }
 
-std::string Server::msgTransform(std::string msg){
-    return ":" + this->name + " " + msg + "\r\n";
+std::string Server::msgTransform(std::string msg, std::string nick, int code){
+    std::string nk = (nick.empty())? "*" : nick;
+    return ":" + this->name + " " + std::to_string(code) + " " + nk + " " + msg + "\r\n";
 }

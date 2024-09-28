@@ -31,7 +31,7 @@ class Server{
         void setSocket(std::string port);
         void addPoll(int newfd);
         void removePoll(int i);
-        std::string msgTransform(std::string msg);
+        std::string msgTransform(std::string msg, std::string nick, int code);
 
     public:
         void add_client();
