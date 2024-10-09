@@ -96,21 +96,87 @@ class IRCBot:  # Bot class
     def handle_commands(self, message: str) -> None:  # Handle specific commands (!hello, !slap)
         sender = message.split('!')[0][1:]
         if "!hello" in message.lower():
-            self.send_command(f"PRIVMSG {self.channel} :Hello, {sender}!")
+            self.send_command(random.choice(self.random_hellos(sender)))
         elif "!slap" in message.lower():
-            self.handle_slap(sender)
- 
-    def handle_slap(self, sender: str) -> None:
-        if len(self.users) > 1:
-            # Convert users list to a set to perform the subtraction
-            possible_targets = list(set(self.users) - {sender})
-            if possible_targets:
-                target = random.choice(possible_targets)
-                self.send_command(f"PRIVMSG {self.channel} :{sender} slaps {target} with a large trout!")
+            # Check if a target is provided after the !slap command
+            parts = message.split(' ')
+            if len(parts) > 4:  # Expecting at least "!slap target"
+                target = parts[4].strip()
+                self.handle_slap(sender, target)
             else:
-                self.send_command(f"PRIVMSG {self.channel} :No one to slap!")
+                self.handle_slap(sender)  # No target specified
+    def random_hellos(self, sender) -> list:
+        random_res = [
+            f"PRIVMSG {self.channel} :Hello, {sender}!",
+            f"PRIVMSG {self.channel} :How do you do, {sender}?",
+            f"PRIVMSG {self.channel} :Hey there, {sender}! How's it going?",
+            f"PRIVMSG {self.channel} :Good to see you, {sender}!",
+            f"PRIVMSG {self.channel} :What's up, {sender}?",
+            f"PRIVMSG {self.channel} :Greetings, {sender}! Hope you're doing well!",
+            f"PRIVMSG {self.channel} :Hi, {sender}! How are you today?",
+            f"PRIVMSG {self.channel} :Hello, {sender}! Great to have you here!",
+            f"PRIVMSG {self.channel} :Hey {sender}, what's new with you?",
+            f"PRIVMSG {self.channel} :Yo {sender}, how's it hanging?",
+            f"PRIVMSG {self.channel} :Hi there, {sender}! Nice to see you!",
+            f"PRIVMSG {self.channel} :Hello, hello, {sender}! Welcome!"
+        ]
+        return random_res
+
+    def random_responses(self, sender, target, random_target, choice: str) -> str:
+        targeted_attack_array = [
+        f"PRIVMSG {self.channel} :WOOOOWWWWWW {sender} has slapped {target} with a FAT trout!",
+        f"PRIVMSG {self.channel} :HOLLYYYY why did {sender} slap {target} with that trout!",
+        f"PRIVMSG {self.channel} :OMG {sender} is crazy, they just slapped {target} with that HUGEEEEEEE trout!",
+        f"PRIVMSG {self.channel} :Yikes! {sender} just gave {target} a wet slap with a giant trout!",
+        f"PRIVMSG {self.channel} :WHAM! {sender} slapped {target} so hard with a trout, it’s still flopping!",
+        f"PRIVMSG {self.channel} :That trout came out of nowhere! {sender} just smacked {target} with it!",
+        f"PRIVMSG {self.channel} :Watch out! {sender} just unleashed a trout attack on {target}!",
+        f"PRIVMSG {self.channel} :Did you see that? {sender} just gave {target} a fishy smack with a massive trout!",
+        f"PRIVMSG {self.channel} :SPLASH! {target} just got slapped with a trout by {sender}—what a hit!",
+        f"PRIVMSG {self.channel} :OUCH! {target} will never forget that trout slap from {sender}!",
+        f"PRIVMSG {self.channel} :Whoa, {sender} just landed a trout smackdown on {target}—that’s gotta hurt!",
+        f"PRIVMSG {self.channel} :The trout wars have begun! {sender} just slapped {target} with a slimy fish!",
+        f"PRIVMSG {self.channel} :Fish slap alert! {target} got hit by {sender} with a huge trout, it's pandemonium!"
+        ]
+        random_attack_array = [
+            f"PRIVMSG {self.channel} :OMGGG {sender} randomly slapped {random_target} with a GIANT trout!",
+            f"PRIVMSG {self.channel} :This is crazy! {sender} randomly fwacked {random_target} with a shark of a trout!",
+            f"PRIVMSG {self.channel} :Out of nowhere, {sender} just whacked {random_target} with a massive trout!",
+            f"PRIVMSG {self.channel} :Whoa! {random_target} just got a surprise trout slap from {sender}!",
+            f"PRIVMSG {self.channel} :Look out! {sender} just randomly fish-slapped {random_target} with a huge trout!",
+            f"PRIVMSG {self.channel} :BAM! {random_target} got a totally unexpected trout smack from {sender}!",
+            f"PRIVMSG {self.channel} :That’s wild! {sender} just unleashed a random trout slap on {random_target}!",
+            f"PRIVMSG {self.channel} :Watch out, {random_target}! {sender} came out of nowhere with a trout slap!",
+            f"PRIVMSG {self.channel} :No one saw it coming! {sender} randomly smacked {random_target} with a trout!",
+            f"PRIVMSG {self.channel} :OUCH! {sender} just trout-slammed {random_target} out of the blue!",
+            f"PRIVMSG {self.channel} :What just happened? {sender} randomly slapped {random_target} with a monster trout!",
+            f"PRIVMSG {self.channel} :SLAP! {random_target} got blindsided by a trout from {sender}!",
+            f"PRIVMSG {self.channel} :Total chaos! {sender} randomly slapped {random_target} with a flopping trout!"
+        ]
+
+        if choice == "Targ_attack":
+            line = random.choice(targeted_attack_array)
+        elif choice == "Rand_attack":
+            line = random.choice(random_attack_array)
+        return line
+
+ 
+    def handle_slap(self, sender: str, target: str = None) -> None:
+        if target and target in self.users:  # Check if the target is in the user list
+            self.send_command(self.random_responses(sender, target, None,"Targ_attack"))
         else:
-            self.send_command(f"PRIVMSG {self.channel} :No other users available to slap!")
+            if target:  # Target is specified but not in the channel
+                self.send_command(f"PRIVMSG {self.channel} :{sender}, {target} is not in this channel!")
+            elif len(self.users) > 1:
+                # Select a random user to slap if no valid target is provided
+                possible_targets = list(set(self.users) - {sender})
+                if possible_targets:
+                    random_target = random.choice(possible_targets)
+                    self.send_command(self.random_responses(sender, None, random_target,"Rand_attack"))
+                else:
+                    self.send_command(f"PRIVMSG {self.channel} :There is no one to slap here bro")
+            else:
+                self.send_command(f"PRIVMSG {self.channel} :You cant slap anyone else")
     
     def change_nick(self)-> None:
         NewNick = input("What would you like your new name to be? ")
