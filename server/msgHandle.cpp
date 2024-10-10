@@ -91,16 +91,11 @@ std::string Server::privmsg(Message message, int ind) {
     Client *client = this->clients[fd];
     //check if client is authorised and registered
     if (!this->clients[fd]->IsAuth()) return msgTransform(":You are not authorized", client->GetNickname(), 451);
-
-    //check the right number of parameters
-    if (message.getArguments().size() < 2) return msgTransform("PRVIMSG: Not enough parameters", client->GetNickname(), 461);
+    //check the right number of parametrs
+    if (message.getArguments().size() < 2) return msgTransform("PRVIMSG:Not enough parameters", client->GetNickname(), 461);
+    if (message.getArguments().size() > 2) return msgTransform(":Too many parameters", client->GetNickname(), 461);
     std::string recipient = message.getArguments()[0];
-    if (message.getArguments()[1][0] !=":") return msgTransform("PRVIMSG: Too many targets", client->GetNickname(), 407);
-    std::string msgContent = message.getArguments()[1].substr(1);
-    for (int i=3; i<message.getArguments().length(); i++){
-        msgContent+=message.getArguments()[i]+" ";
-    }
-
+    std::string msgContent = message.getArguments()[1];
     //check if recipient is valid
     if (recipient.empty() || msgContent.empty()) return msgTransform(":No recipient or message provided", client->GetNickname(), 411);
     if (msgContent.empty()) {
@@ -124,7 +119,5 @@ std::string Server::privmsg(Message message, int ind) {
 
     //deliver a message
     std::string fullMessage = ":" + client->GetNickname() + " PRIVMSG " + recipient + " :" + msgContent + "\r\n";
-    send(recipientClient->GetFd(), fullMessage.c_str(), fullMessage.length(), 0);
-
-    return ""
+    return fullMessage;
 }
