@@ -105,6 +105,15 @@ class IRCBot:  # Bot class
                 self.handle_slap(sender, target)
             else:
                 self.handle_slap(sender)  # No target specified
+        elif "!kick" in message.lower():
+            parts = message.split(' ')
+            if len(parts) > 4:
+                target = parts[4].strip()
+                self.kick_bot(sender,target)
+            else:
+                self.send_command(f"PRIVMSG {self.channel} :Incorrect use of Kick")
+
+    
     def random_hellos(self, sender) -> list:
         random_res = [
             f"PRIVMSG {self.channel} :Hello, {sender}!",
@@ -153,31 +162,53 @@ class IRCBot:  # Bot class
             f"PRIVMSG {self.channel} :SLAP! {random_target} got blindsided by a trout from {sender}!",
             f"PRIVMSG {self.channel} :Total chaos! {sender} randomly slapped {random_target} with a flopping trout!"
         ]
+        missed_attack = [
+            f"PRIVMSG {self.channel} :{sender} missed their attack and hit themselves instead.",
+            f"PRIVMSG {self.channel} :{sender} tried slapping {target} with a trout but missed and smacked themselves.",
+            f"PRIVMSG {self.channel} :Oops! {sender} swung at {target} but ended up hitting themselves!",
+            f"PRIVMSG {self.channel} :Yikes! {sender} missed {target} and slapped their own face with a trout!",
+            f"PRIVMSG {self.channel} :Embarrassing! {sender} aimed at {target} but whacked themselves instead!",
+            f"PRIVMSG {self.channel} :Whoops! {sender} tried to slap {target} but ended up slapping themselves!",
+            f"PRIVMSG {self.channel} :Oh no! {sender} swung a trout at {target} and ended up smacking themselves!",
+            f"PRIVMSG {self.channel} :What a fail! {sender} aimed at {target} but trout-smacked themselves!",
+            f"PRIVMSG {self.channel} :{sender} flung the trout at {target} and it backfired—now they're the one hurting!",
+            f"PRIVMSG {self.channel} :LOL! {sender} tried to hit {target} but ended up trout-slapping themselves instead!",
+            f"PRIVMSG {self.channel} :Disaster! {sender} totally missed {target} and hit themselves with the trout!",
+            f"PRIVMSG {self.channel} :{sender} got a bit too confident and missed {target}, slapping themselves!"
+        ]
+
 
         if choice == "Targ_attack":
             line = random.choice(targeted_attack_array)
         elif choice == "Rand_attack":
             line = random.choice(random_attack_array)
+        elif choice == "Missed_attack":
+            line = random.choice(missed_attack)
         return line
 
  
     def handle_slap(self, sender: str, target: str = None) -> None:
-        if target and target in self.users:  # Check if the target is in the user list
+        if target and target in self.users and target != self.nick:  # Check if the target is in the user list
             self.send_command(self.random_responses(sender, target, None,"Targ_attack"))
         else:
             if target:  # Target is specified but not in the channel
-                self.send_command(f"PRIVMSG {self.channel} :{sender}, {target} is not in this channel!")
-            elif len(self.users) > 1:
+                self.send_command(self.random_responses(sender, target, None, "Missed_attack"))
+            elif len(self.users) > 2:
                 # Select a random user to slap if no valid target is provided
-                possible_targets = list(set(self.users) - {sender})
+                possible_targets = list(set(self.users) - {sender,self.nick})
                 if possible_targets:
                     random_target = random.choice(possible_targets)
                     self.send_command(self.random_responses(sender, None, random_target,"Rand_attack"))
                 else:
                     self.send_command(f"PRIVMSG {self.channel} :There is no one to slap here bro")
             else:
-                self.send_command(f"PRIVMSG {self.channel} :You cant slap anyone else")
+                self.send_command(f"PRIVMSG {self.channel} :You cant slap anyone")
     
+    def kick_bot(self,sender, target)->None:
+        if target == self.nick:
+            self.send_command(f"PART {self.channel}")
+
+
     def change_nick(self)-> None:
         NewNick = input("What would you like your new name to be? ")
         self.nick = NewNick
