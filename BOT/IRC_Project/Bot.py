@@ -9,7 +9,7 @@ class IRCBot:  # Bot class
         self.port: int = port
         self.nick: str = nick
         self.channel: str = channel
-        self.client: socket.socket = socket.socket(socket.AF_INET6, socket.SOCK_STREAM)
+        self.client: socket.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.users: list = []  # Track users in the channel
  
     def connect(self) -> None:  # Connect to server

@@ -1,5 +1,7 @@
 #include "headers/Channel.hpp"
 #include "headers/Client.hpp"
+#include "headers/Server.hpp"
+#include <cstring>
 #include <iostream>
 #include <map>
 #include <string>
@@ -48,6 +50,33 @@ void Channel::addMember(Client *member) {
 
 void Channel::removeMember(int fd) { this->members.erase(fd); }
 
-void Channel::removeMember(Client *member) {
+void Channel::removeMember(Client *member, std::string reason) {
+  std::string partMsg = ":" + member->GetNickname() + " PART " + this->name +
+                        " :" + reason + "\r\n";
+  for (const std::pair<int, Client *> ptr : members) {
+    if (send(ptr.first, partMsg.c_str(), partMsg.length(), 0) == -1) {
+      std::cerr << "couldnt send part notification" << std::endl;
+    }
+  }
   this->members.erase(member->GetFd());
+}
+
+std::string Channel::getMemberNicks() {
+  std::string str = "";
+  for (const auto &p : members) {
+    str += p.second->GetNickname() + " ";
+  }
+  return str;
+}
+
+void Channel::sendMsg(std::string msg, Client *client) {
+  if (members.empty())
+    return;
+  for (const std::pair<int, Client *> p : members) {
+    if (p.second != client) {
+      if (send(p.first, msg.c_str(), msg.size(), 0) == -1) {
+        std::cerr << "failed to send message\n";
+      }
+    }
+  }
 }

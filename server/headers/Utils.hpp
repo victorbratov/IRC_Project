@@ -4,6 +4,7 @@
 #include "Channel.hpp"
 #include <cstddef>
 #include <iostream>
+#include <sstream>
 #include <string>
 #include <vector>
 
@@ -69,6 +70,20 @@ inline std::vector<std::string> split(std::string str, std::string delimiter) {
 
   res.push_back(str.substr(pos_start));
   return res;
+}
+
+inline std::vector<std::string> splitRm(std::string s, std::string delimiter) {
+  std::vector<std::string> tokens;
+  size_t pos = 0;
+  std::string token;
+  while ((pos = s.find(delimiter)) != std::string::npos) {
+    token = s.substr(0, pos);
+    tokens.push_back(token);
+    s.erase(0, pos + delimiter.length());
+  }
+  tokens.push_back(s);
+
+  return tokens;
 }
 
 #endif // UTILS

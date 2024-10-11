@@ -21,8 +21,10 @@ Message::Message(std::string message) {
   while (iss >> token) {
     if (token[0] == ':') {
       std::string trailing = token.substr(1);
-      std::getline(iss, token);
-      trailing += token;
+      std::string tk;
+      while (iss >> tk) {
+        trailing += " " + tk;
+      }
       this->arguments.push_back(trailing);
       break;
     }

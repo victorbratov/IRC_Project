@@ -25,8 +25,10 @@ public:
   void setName(std::string);
   void setTopic(std::string);
   void addMember(Client *);
-  void removeMember(Client *);
+  void removeMember(Client *, std::string reason);
   void removeMember(int);
+  std::string getMemberNicks();
+  void sendMsg(std::string, Client *client);
 };
 
 #endif // CHANNEL_HPP

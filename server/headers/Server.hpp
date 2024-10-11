@@ -46,6 +46,8 @@ public:
   std::string user(Message msg, int ind);
   std::string join(Message msg, int ind);
   void addChannel(std::string chanName, Client *creator);
+  std::string privmsg(Message msg, int ind);
+  std::string part(Message msg, int ind);
 };
 
 #endif // SERVER_HPP
