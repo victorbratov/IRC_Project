@@ -30,8 +30,7 @@ std::string Server::respond(Message message, int ind) {
     return part(message, ind);
   else if (message.getCommand() == "QUIT")
     return quit(message, ind);
-  return msgTransform(":Unknown command",
-                      this->clients[this->fds[ind].fd]->GetNickname(), 421);
+  return "";
 }
 
 std::string Server::nick(Message message, int ind) {
