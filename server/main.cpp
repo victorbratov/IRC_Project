@@ -12,7 +12,7 @@ int main(int argc, char **argv) {
   }
 
   std::string port = argv[1];
-  Server server("testing", 20, port);
+  Server server("testing", 20, port, "password");
 
   server.start();
   return 0;

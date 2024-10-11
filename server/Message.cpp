@@ -28,6 +28,7 @@ Message::Message(std::string message) {
     int characters = 0;
     std::stringstream ss(message);
     std::string token;
+
     if (message[0] == ':') {
         std::getline(ss, token, ' ');
         if (token.length()==1){
@@ -70,8 +71,7 @@ std::vector<std::string> Message::getArguments() {
 std::string Message::getPrefix() {
     return this->prefix;
 }
+
 std::string Message::toString() {
     std::string formattedMsg;
-
-
 }

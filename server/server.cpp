@@ -1,14 +1,16 @@
 #include "headers/Server.hpp"
 #include "headers/Client.hpp"
+#include "headers/Message.hpp"
 #include <cstring>
 #include <iostream>
 #include <map>
 #include <ostream>
 #include <string>
 #include <sys/socket.h>
+#include <vector>
 
 
-Server::Server(std::string name, int max_clients, std::string port){
+Server::Server(std::string name, int max_clients, std::string port, std::string password){
     this->name = name;
     this->max_clients = max_clients;
     this->fds = new struct pollfd[max_clients];
@@ -16,6 +18,9 @@ Server::Server(std::string name, int max_clients, std::string port){
     this->fds[0].fd = this->socket_fd;
     this->fds[0].events = POLLIN;
     this->clients_online = 1;
+    this->password = password;
+    this->clients = std::map<int, Client *>();
+    this->nicks = std::vector<std::string>();
 }
 
 Server::~Server(){
@@ -81,7 +86,7 @@ void Server::addPoll(int newfd){
 
     this->fds[this->clients_online].fd = newfd;
     this->fds[this->clients_online].events = POLLIN;
-    this->clients.insert(std::pair<int, Client*>(newfd, new Client(newfd)));
+    this->clients[newfd] = new Client(newfd);
     this->clients_online++;
 }
 
@@ -159,7 +164,8 @@ void Server::client_message(int index){
         removePoll(index);
     } else {
         std::string msg = std::string(buf, nbytes);
-        std::string response = "server: " + msg;
+        Message message = Message(msg);
+        std::string response = respond(message, index);
         std::cout << response << std::endl;
         if (send(this->fds[index].fd, response.c_str(), response.length(), 0) == -1) {
             std::cerr << "send" << std::endl;
@@ -167,4 +173,9 @@ void Server::client_message(int index){
     }
 
     memset(buf, 0, 1024);
+}
+
+std::string Server::msgTransform(std::string msg, std::string nick, int code){
+    std::string nk = (nick.empty())? "*" : nick;
+    return ":" + this->name + " " + std::to_string(code) + " " + nk + " " + msg + "\r\n";
 }
