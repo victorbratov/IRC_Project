@@ -21,7 +21,7 @@ class IRCBot:  # Bot class
             print(f"Error connecting to IRC server: {e}")
             sys.exit(1)
  
-    def send_command(self, command: str) -> None:  # Command for sending messages
+    def send_command(self, command: str) -> None:  # function for sending all commands
         self.client.send(f"{command}\r\n".encode('utf-8'))
  
     def join_channel(self) -> None:  # Join channel
@@ -40,14 +40,14 @@ class IRCBot:  # Bot class
     def handle_private_message(self, message: str) -> None:  # Respond to private message with a random response
         sender = message.split('!')[0][1:]
         Responses = self.read_responses()
-        random_response = random.choice(Responses)
+        random_response = random.choice(Responses) #getting random response
         self.send_command(f"PRIVMSG {sender} :{random_response}")
-        print(f"Sent a private message to {sender}: {random_response}")
+        print(f"Sent a private message to {sender}: {random_response}") 
  
-    def read_responses(self) -> list:
+    def read_responses(self) -> list: #function for getting random response from file
         try:
-            with open("Responses.txt", 'r') as file:
-                lines = [line.strip() for line in file.readlines()]
+            with open("Responses.txt", 'r') as file: #read file
+                lines = [line.strip() for line in file.readlines()] #gett all lines
             return lines
         except FileNotFoundError:
             print(f"Error: The file was not found.")
@@ -56,36 +56,41 @@ class IRCBot:  # Bot class
             print(f"An error occurred: {e}")
             return []
  
-    def process_server_message(self, message: bytes) -> None:
+    def process_server_message(self, message: bytes) -> None: #getting server messages
         decoded_message: str = message.decode('utf-8').strip()
         messages = decoded_message.split('\r\n')
-        for msg in messages:
+        for msg in messages: #messages may be concatinated so splitting them is required 
             if msg:
                 self.handle_individual_message(msg)
  
-    def handle_individual_message(self, message: str) -> None:
+    def handle_individual_message(self, message: str) -> None: #dealing with individual messages
         print(f"Server: {message}")
  
-        if '353' in message:
+        if '353' in message: #if message from server is names list
             self.handle_names_response(message)
+
         elif '366' in message:
-            print(f"End of NAMES list. Active users: {self.users}")
-        elif 'PRIVMSG'.lower() in message.lower():
+            print(f"End of NAMES list. Active users: {self.users}") #if all names are through
+
+        elif 'PRIVMSG'.lower() in message.lower(): #if message in channel
             self.handle_commands(message)
-        if f"PRIVMSG {self.nick}".lower() in message.lower():
+
+        if f"PRIVMSG {self.nick}".lower() in message.lower(): #if orivate message to bot is read
             self.handle_private_message(message)
-        elif 'JOIN'.lower() in message.lower():
+
+        elif 'JOIN'.lower() in message.lower(): #if a user joins the channel they need to be added to the user list
             sender = message.split('!')[0][1:]
             if sender not in self.users:
                 self.users.append(sender)
                 print(f"User {sender} joined the channel. Active users: {self.users}")
-        elif 'PART'.lower() in message.lower() or 'QUIT'.lower() in message.lower():
+
+        elif 'PART'.lower() in message.lower() or 'QUIT'.lower() in message.lower(): #if a user leaves the channel they must be removed from the user list
             sender = message.split('!')[0][1:]
             if sender in self.users:
                 self.users.remove(sender)
                 print(f"User {sender} left the channel. Active users: {self.users}")
  
-    def handle_names_response(self, message: str) -> None:
+    def handle_names_response(self, message: str) -> None: #adding users to the user list
         if '353' in message:
             user_list = message.split(':')[-1].split()
             for user in user_list:
@@ -93,7 +98,7 @@ class IRCBot:  # Bot class
                     self.users.append(user)
             print(f"Updated users: {self.users}")
  
-    def handle_commands(self, message: str) -> None:  # Handle specific commands (!hello, !slap)
+    def handle_commands(self, message: str) -> None:  # Handle specific commands (!hello, !slap, !kick)
         sender = message.split('!')[0][1:]
         if "!hello" in message.lower():
             self.send_command(random.choice(self.random_hellos(sender)))
@@ -105,16 +110,16 @@ class IRCBot:  # Bot class
                 self.handle_slap(sender, target)
             else:
                 self.handle_slap(sender)  # No target specified
-        elif "!kick" in message.lower():
+        elif "!kick" in message.lower():#used to kick user
             parts = message.split(' ')
             if len(parts) > 4:
                 target = parts[4].strip()
                 self.kick_bot(sender,target)
-            else:
+            else:#error handeling
                 self.send_command(f"PRIVMSG {self.channel} :Incorrect use of Kick")
 
     
-    def random_hellos(self, sender) -> list:
+    def random_hellos(self, sender) -> list: #random list of responses for !hello command
         random_res = [
             f"PRIVMSG {self.channel} :Hello, {sender}!",
             f"PRIVMSG {self.channel} :How do you do, {sender}?",
@@ -131,8 +136,9 @@ class IRCBot:  # Bot class
         ]
         return random_res
 
-    def random_responses(self, sender, target, random_target, choice: str) -> str:
-        targeted_attack_array = [
+    def random_responses(self, sender, target, random_target, choice: str) -> str: #random list of responses for !slap
+
+        targeted_attack_array = [ #if !slap was targeted using nick
         f"PRIVMSG {self.channel} :WOOOOWWWWWW {sender} has slapped {target} with a FAT trout!",
         f"PRIVMSG {self.channel} :HOLLYYYY why did {sender} slap {target} with that trout!",
         f"PRIVMSG {self.channel} :OMG {sender} is crazy, they just slapped {target} with that HUGEEEEEEE trout!",
@@ -147,7 +153,8 @@ class IRCBot:  # Bot class
         f"PRIVMSG {self.channel} :The trout wars have begun! {sender} just slapped {target} with a slimy fish!",
         f"PRIVMSG {self.channel} :Fish slap alert! {target} got hit by {sender} with a huge trout, it's pandemonium!"
         ]
-        random_attack_array = [
+
+        random_attack_array = [ #if !slap was random
             f"PRIVMSG {self.channel} :OMGGG {sender} randomly slapped {random_target} with a GIANT trout!",
             f"PRIVMSG {self.channel} :This is crazy! {sender} randomly fwacked {random_target} with a shark of a trout!",
             f"PRIVMSG {self.channel} :Out of nowhere, {sender} just whacked {random_target} with a massive trout!",
@@ -162,7 +169,7 @@ class IRCBot:  # Bot class
             f"PRIVMSG {self.channel} :SLAP! {random_target} got blindsided by a trout from {sender}!",
             f"PRIVMSG {self.channel} :Total chaos! {sender} randomly slapped {random_target} with a flopping trout!"
         ]
-        missed_attack = [
+        missed_attack = [ #if the user incorrectly used the slap
             f"PRIVMSG {self.channel} :{sender} missed their attack and hit themselves instead.",
             f"PRIVMSG {self.channel} :{sender} tried slapping {target} with a trout but missed and smacked themselves.",
             f"PRIVMSG {self.channel} :Oops! {sender} swung at {target} but ended up hitting themselves!",
@@ -177,7 +184,7 @@ class IRCBot:  # Bot class
             f"PRIVMSG {self.channel} :{sender} got a bit too confident and missed {target}, slapping themselves!"
         ]
 
-
+        #returns correct attack
         if choice == "Targ_attack":
             line = random.choice(targeted_attack_array)
         elif choice == "Rand_attack":
@@ -187,7 +194,7 @@ class IRCBot:  # Bot class
         return line
 
  
-    def handle_slap(self, sender: str, target: str = None) -> None:
+    def handle_slap(self, sender: str, target: str = None) -> None: #handles all the slap options
         if target and target in self.users and target != self.nick:  # Check if the target is in the user list
             self.send_command(self.random_responses(sender, target, None,"Targ_attack"))
         else:
@@ -204,13 +211,13 @@ class IRCBot:  # Bot class
             else:
                 self.send_command(f"PRIVMSG {self.channel} :You cant slap anyone")
     
-    def kick_bot(self,sender, target)->None:
+    def kick_bot(self,sender, target)->None: #if the user uses !kick and the bot is this one
         if target == self.nick:
             self.send_command(f"PART {self.channel}")
 
 
-    def change_nick(self)-> None:
-        NewNick = input("What would you like your new name to be? ")
+    def change_nick(self)-> None: #If you want to change your nick beore entering the channel
+        NewNick = input("What would you like your new name to be? ") #in command line
         self.nick = NewNick
         self.send_command(f"NICK {NewNick}")
  
