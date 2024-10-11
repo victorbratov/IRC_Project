@@ -8,8 +8,11 @@
 #include <iostream>
 #include <string>
 #include <sys/socket.h>
+#include <unistd.h>
 #include <vector>
 
+// every incoming messege goes through this if else block to detemine the
+// command and respond correctly
 std::string Server::respond(Message message, int ind) {
   if (message.isInvalid())
     return "Invalid message!!!\r\n";
@@ -25,6 +28,8 @@ std::string Server::respond(Message message, int ind) {
     return privmsg(message, ind);
   else if (message.getCommand() == "PART")
     return part(message, ind);
+  else if (message.getCommand() == "QUIT")
+    return quit(message, ind);
   return msgTransform(":Unknown command",
                       this->clients[this->fds[ind].fd]->GetNickname(), 421);
 }
@@ -169,6 +174,7 @@ std::string Server::privmsg(Message message, int ind) {
   for (const std::string &recpName : recipientList) {
     if (recpName.empty())
       return msgTransform("No recipient provided", client->GetNickname(), 411);
+    // check if the recipient is a user or a channel
     if (recpName[0] == '#' || recpName[0] == '&') {
       Channel *chan = findChannelByName(this->channels, recpName);
       if (chan == NULL) {
@@ -215,4 +221,23 @@ std::string Server::privmsg(Message message, int ind) {
   }
 
   return response;
+}
+
+std::string Server::quit(Message msg, int ind) {
+  int fd = this->fds[ind].fd;
+  Client *client = this->clients[fd];
+
+  for (size_t i = 0; i < channels.size(); i++) {
+    channels[i]->removeMember(client, "Left");
+  }
+
+  clients.erase(fd);
+  close(fd);
+  removePoll(ind);
+
+  std::string message = ":" + client->GetNickname() + " " + msg.getCommand();
+  for (const auto &p : clients) {
+    send(p.first, message.c_str(), message.length(), 0);
+  }
+  return "";
 }

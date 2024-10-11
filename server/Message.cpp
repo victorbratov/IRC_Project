@@ -3,6 +3,8 @@
 #include <string>
 #include <vector>
 
+// class constructor: acts as a parser for raw incoming strings of text
+// brakes everything down into a prefix, command and arguments
 Message::Message(std::string message) {
 
   this->arguments = std::vector<std::string>();
@@ -19,6 +21,7 @@ Message::Message(std::string message) {
   iss >> this->command;
 
   while (iss >> token) {
+    // special case for trailing arguments
     if (token[0] == ':') {
       std::string trailing = token.substr(1);
       std::string tk;

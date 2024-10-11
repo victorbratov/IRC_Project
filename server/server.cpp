@@ -3,7 +3,6 @@
 #include "headers/Client.hpp"
 #include "headers/Message.hpp"
 #include "headers/Utils.hpp"
-#include <algorithm>
 #include <cstddef>
 #include <cstring>
 #include <iostream>
@@ -14,8 +13,8 @@
 #include <sys/socket.h>
 #include <vector>
 
-Server::Server(std::string name, int max_clients, std::string port,
-               std::string password) {
+// class constructor
+Server::Server(std::string name, int max_clients, std::string port) {
   this->name = name;
   this->max_clients = max_clients;
   this->fds = new struct pollfd[max_clients];
@@ -23,12 +22,13 @@ Server::Server(std::string name, int max_clients, std::string port,
   this->fds[0].fd = this->socket_fd;
   this->fds[0].events = POLLIN;
   this->clients_online = 1;
-  this->password = password;
   this->clients = std::map<int, Client *>();
   this->nicks = std::vector<std::string>();
   this->channels = std::vector<Channel *>();
 }
 
+// destructor isnt really needed since its lifetime is the same as the programm
+// lifetime
 Server::~Server() {
   if (this->fds != NULL) {
     delete[] this->fds;
@@ -42,6 +42,8 @@ Server::~Server() {
   this->clients.clear();
 }
 
+// adding a new client and allocating a new socket.
+// socket is added to the polling
 void Server::add_client() {
   struct sockaddr_storage client_addr;
   socklen_t addr_size = sizeof client_addr;
@@ -63,6 +65,7 @@ void Server::add_client() {
 
 void Server::start() {
   while (1) {
+    // poll all the sockets in a loop
     int poll_c = poll(this->fds, this->clients_online, -1);
     if (poll_c == -1) {
       std::cerr << "poll" << std::endl;
@@ -72,8 +75,12 @@ void Server::start() {
     for (int i = 0; i < this->clients_online; i++) {
       if (this->fds[i].revents & POLLIN) {
         if (this->fds[i].fd == this->socket_fd) {
+          // new clients are on the main server socket, from here they go the
+          // their own socket
           add_client();
         } else {
+          // if the socket is different from the main server socket than its a
+          // client message
           client_message(i);
         }
       }
@@ -81,6 +88,7 @@ void Server::start() {
   }
 }
 
+// adding a new socket to the pollfd struct that is being polled
 void Server::addPoll(int newfd) {
   if (this->clients_online == this->max_clients) {
     std::cerr << "server: max clients reached" << std::endl;
@@ -89,6 +97,7 @@ void Server::addPoll(int newfd) {
   }
 
   this->fds[this->clients_online].fd = newfd;
+  // set the event to read as any message recieved
   this->fds[this->clients_online].events = POLLIN;
   this->clients[newfd] = new Client(newfd);
   this->clients_online++;
@@ -101,6 +110,8 @@ void Server::removePoll(int i) {
   this->clients_online--;
 }
 
+// creates the main socket for the server and binds it to the port that is
+// passed as an argument
 void Server::setSocket(std::string port) {
   int yes = 1;
   int status;
@@ -156,6 +167,7 @@ void Server::setSocket(std::string port) {
   std::cout << "server: waiting for connections on port: " << port << std::endl;
 }
 
+// proess a client message and pass send a response
 void Server::client_message(int index) {
   char buf[4096];
   int nbytes = recv(this->fds[index].fd, buf, sizeof buf, 0);
@@ -167,6 +179,12 @@ void Server::client_message(int index) {
     } else {
       std::cerr << "recv" << std::endl;
     }
+    Client *client = clients[fds[index].fd];
+    for (size_t i = 0; i < channels.size(); i++) {
+      channels[i]->removeMember(client, "Left");
+    }
+
+    clients.erase(fds[index].fd);
     close(fds[index].fd);
     removePoll(index);
   } else {
@@ -185,12 +203,14 @@ void Server::client_message(int index) {
   memset(buf, 0, 1024);
 }
 
+// utility function to get the right structure for a code response
 std::string Server::msgTransform(std::string msg, std::string nick, int code) {
   std::string nk = (nick.empty()) ? "*" : nick;
   return ":" + this->name + " " + std::to_string(code) + " " + nk + " " + msg +
          "\r\n";
 }
 
+// adding a new channel to the server
 void Server::addChannel(std::string chanName, Client *creator) {
   Channel *newChan = new Channel(chanName, creator);
   this->channels.push_back(newChan);

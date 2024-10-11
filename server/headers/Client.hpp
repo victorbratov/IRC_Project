@@ -5,16 +5,6 @@
 #include <sys/socket.h>
 #include <unistd.h>
 
-struct Mode {
-  bool away;
-  bool invisible;
-  bool wallops;
-  bool restricted;
-  bool op;
-  bool localOp;
-  bool server;
-};
-
 class Client {
 private:
   bool isRegistered, online;
@@ -23,7 +13,6 @@ private:
   std::string realName;
   sockaddr_storage addr;
   socklen_t addrLen;
-  Mode mode;
 
 public:
   Client(int client_fd);
@@ -38,12 +27,10 @@ public:
   std::string GetUsername();
   sockaddr_storage GetAddr();
   socklen_t GetAddrLen();
-  Mode GetMode();
 
   void SetNickname(std::string nickname);
   void SetRealName(std::string realName);
   void SetUsername(std::string username);
-  void SetMode(Mode mode);
   void SetRegistered(bool isRegistered);
   bool getOnline();
   void setOnline(bool val);

@@ -1,6 +1,8 @@
 #include "headers/Client.hpp"
+#include <cstdio>
 #include <sys/socket.h>
 
+// ckass constructor
 Client::Client(int fd) {
   this->isRegistered = false;
   this->fd = fd;
@@ -9,7 +11,6 @@ Client::Client(int fd) {
   this->nickname = "";
   this->addr = sockaddr_storage();
   this->addrLen = sizeof(this->addr);
-  this->mode = Mode{0, 0, 0, 0, 0, 0, 0};
 }
 
 Client::~Client() { close(this->fd); }

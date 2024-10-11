@@ -1,10 +1,12 @@
 #ifndef UTILS
 #define UTILS
-
+/*
+ * this file contains a collection of differnt utilities that are used in server
+ * functios primairly text manipulation and validation functions
+ * */
 #include "Channel.hpp"
 #include <cstddef>
 #include <iostream>
-#include <sstream>
 #include <string>
 #include <vector>
 
@@ -86,4 +88,9 @@ inline std::vector<std::string> splitRm(std::string s, std::string delimiter) {
   return tokens;
 }
 
+inline void removeFromVec(std::vector<Channel *> &vec, std::size_t pos) {
+  std::vector<Channel *>::iterator it = vec.begin();
+  std::advance(it, pos);
+  vec.erase(it);
+}
 #endif // UTILS

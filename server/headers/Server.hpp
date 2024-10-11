@@ -20,13 +20,11 @@ private:
   int max_clients;
   std::string name;
   std::map<int, Client *> clients;
-  std::string password;
   std::vector<std::string> nicks;
   std::vector<Channel *> channels;
 
 public:
-  Server(std::string name, int max_clients, std::string port,
-         std::string password);
+  Server(std::string name, int max_clients, std::string port);
   ~Server();
   void start();
 
@@ -48,6 +46,7 @@ public:
   void addChannel(std::string chanName, Client *creator);
   std::string privmsg(Message msg, int ind);
   std::string part(Message msg, int ind);
+  std::string quit(Message msg, int ind);
 };
 
 #endif // SERVER_HPP

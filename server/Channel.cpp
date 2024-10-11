@@ -1,13 +1,12 @@
 #include "headers/Channel.hpp"
 #include "headers/Client.hpp"
-#include "headers/Server.hpp"
 #include <cstring>
 #include <iostream>
 #include <map>
 #include <string>
 #include <sys/socket.h>
-#include <utility>
 
+// constructor for the class
 Channel::Channel(std::string name, Client *creator) {
   this->name = name;
   this->creator = creator;
@@ -35,6 +34,7 @@ void Channel::setTopic(std::string topic) { this->topic = topic; }
 
 void Channel::setPrefix(std::string prefix) { this->prefix = prefix; }
 
+// adding a member and sending the join message to other members of the chat
 void Channel::addMember(Client *member) {
   this->members.insert({member->GetFd(), member});
   std::string join_msg = ":" + member->GetNickname() + "!" +
@@ -50,6 +50,7 @@ void Channel::addMember(Client *member) {
 
 void Channel::removeMember(int fd) { this->members.erase(fd); }
 
+// removing a member and sending a notification to everyone in the chat
 void Channel::removeMember(Client *member, std::string reason) {
   std::string partMsg = ":" + member->GetNickname() + " PART " + this->name +
                         " :" + reason + "\r\n";
@@ -69,6 +70,7 @@ std::string Channel::getMemberNicks() {
   return str;
 }
 
+// sending a message to everyone in the chat
 void Channel::sendMsg(std::string msg, Client *client) {
   if (members.empty())
     return;
