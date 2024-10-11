@@ -1,0 +1,9 @@
+[
+        "What do you call a pig that does karate? A pork chop.",
+        "What's UP? The sky",
+        "Why did the bike fall over? It was two tired.",
+        "Why did the golfer bring two pairs of pants? In case he got a hole in one.",
+        "Why did the Clydesdale give the pony a glass of water? Because he was a little horse.",
+        "What did the policeman say to his belly button? You’re under a vest.",
+        "Why did the man get hit by a bike every day? He was stuck in a vicious cycle."
+        ]
